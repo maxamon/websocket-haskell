@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
-
 import Data.Char (isPunctuation, isSpace)
 import Data.Monoid (mappend)
 import Data.Text (Text)
@@ -79,7 +78,6 @@ talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
 talk conn state client@(user, _) = handle catchDisconnect $
         forever $ do
                 msg <- WS.receiveData conn
-                parseCommand msg
                 liftIO $ readMVar state >>= broadcast
                         (user `mappend` ": " `mappend` msg)
         where
@@ -89,8 +87,3 @@ talk conn state client@(user, _) = handle catchDisconnect $
                                 broadcast (user `mappend` " disconnected") s'
                                 return s'
                         _ -> return ()   
-                        
-parseCommand :: Text -> IO ()
-parseCommand msg = case JS.decode  (T.unpack msg) of
-                        JS.Ok value -> putStrLn value
-                        JS.Error err -> putStrLn err
